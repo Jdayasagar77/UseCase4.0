@@ -1,60 +1,117 @@
-//
-//  Models.swift
-//  UseCase-4
-//
-//  Created by J Dayasagar on 12/08/23.
-//
-
 import Foundation
-import SwiftUI
 
-// Model for Refrigerator
-struct Refrigerator: Identifiable {
-    
+struct ElectricalProduct: Identifiable {
     let id = UUID()
+    let name: String
+}
+
+struct Refrigerator: Identifiable {
+    let id = UUID()
+    let category: String
+    let companyName: String
     let modelNo: String
     let warrantyDuration: String
-    let yearOfManufacture: Int
+    let yearOfManufacture: String
     let capacity: String
     let size: String
     let coolingTechnology: String
     let price: Double
-    let specialOffer: String
-    let category: String
+    let specialOffers: [SpecialOffer]
+    static let refrigerators: [Refrigerator] = [ Refrigerator(
+        category: "Double Door",
+        companyName: "CoolTech Appliances",
+        modelNo: "CT2000",
+        warrantyDuration: "2 years",
+        yearOfManufacture: "2023",
+        capacity: "500 L",
+        size: "70x180x80 cm",
+        coolingTechnology: "Frost-Free",
+        price: 899.99,
+        specialOffers: [
+            SpecialOffer(offerDescription: "Free delivery"),
+            SpecialOffer(offerDescription: "10% discount on accessories")
+        ]
+    ), Refrigerator(
+        category: "Single Door",
+        companyName: "ChillMaster",
+        modelNo: "CM150",
+        warrantyDuration: "1 year",
+        yearOfManufacture: "2023",
+        capacity: "300 L",
+        size: "60x150x70 cm",
+        coolingTechnology: "Direct Cool",
+        price: 499.99,
+        specialOffers: [
+            SpecialOffer(offerDescription: "Buy one, get one ice tray free")
+        ]
+    )
+    ]
+
 }
 
-// Sample data
-let refrigerators: [Refrigerator] = [
-    Refrigerator(modelNo: "ABC123", warrantyDuration: "1 year", yearOfManufacture: 2023, capacity: "300L", size: "Medium", coolingTechnology: "Frost-Free", price: 800.00, specialOffer: "Extra 10% off", category: "Refrigerators"),
-    // ... Add more refrigerators
-]
-
-// Calculate final price including GST
-func calculateFinalPrice(price: Double, city: String) -> Double {
-    // Calculate GST based on city and add it to the price
-    var gstPercentage = 0.18 // Assuming a GST rate of 18%
-    if city == "Delhi" {
-        gstPercentage = 0.12 // Different GST rate for Delhi
-    }
-    let gstAmount = price * gstPercentage
-    return price + gstAmount
+struct SpecialOffer: Identifiable {
+    let id = UUID()
+    let offerDescription: String
 }
 
-// Service and installation category
-enum ServiceCategory: String {
-    case basic = "Basic Installation"
-    case premium = "Premium Installation"
-}
-
-// Dealer model
-struct DealerModel {
+struct Store: Identifiable {
+    let id = UUID()
     let name: String
-    let rating: Double
-    let contact: String
+    let location: Location
+    let dealers: [Dealer]
+    static let stores: [Store] = [Store(
+        name: "CoolZone Appliances",
+        location: Location(city: "New York", area: "Downtown"),
+        dealers: [Dealer(
+            name: "Appliance World",
+            contactDetails: ContactDetails(phone: "123-456-7890", email: "info@applianceworld.com"),
+            ratings: 4.5,
+            services: ["Repair", "Maintenance"]
+        ), Dealer(
+            name: "Home Appliances Plus",
+            contactDetails: ContactDetails(phone: "987-654-3210", email: "support@homeappliancesplus.com"),
+            ratings: 4.2,
+            services: ["Installation", "Warranty Support"]
+        )]
+    )]
+
 }
 
-// Sample dealer data
-let dealers: [DealerModel] = [
-    DealerModel(name: "Dealer A", rating: 4.5, contact: "123-456-7890"),
-// ... Add more dealers here
-]
+struct Location {
+    let city: String
+    let area: String
+}
+
+struct Dealer: Identifiable {
+    let id = UUID()
+    let name: String
+    let contactDetails: ContactDetails
+    let ratings: Double
+    let services: [String]
+}
+
+struct ContactDetails {
+    let phone: String
+    let email: String
+}
+
+struct City {
+    let name: String
+    let gstRate: Double
+    static let cities: [City] = [City(name: "New York", gstRate: 8.75)]
+
+}
+
+struct ServiceCategory: Hashable {
+    let name: String
+    static let serviceCategories: [ServiceCategory] = [ServiceCategory(name: "Appliance Services")]
+
+}
+
+struct InstallationCategory: Hashable {
+    let name: String
+    static let installationCategories: [InstallationCategory] = [InstallationCategory(name: "Installation")]
+
+}
+
+

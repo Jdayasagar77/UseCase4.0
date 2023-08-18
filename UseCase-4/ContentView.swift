@@ -6,79 +6,204 @@
 //
 import SwiftUI
 
+
+
 struct ContentView: View {
+    let electricalProductCategories = [
+        ElectricalProduct(name: "Refrigerator"),
+        ElectricalProduct(name: "Washing Machine"),
+        ElectricalProduct(name: "Air Conditioner"),
+        ElectricalProduct(name: "Microwave"),
+        ElectricalProduct(name: "Oven")
+    ]
     
-    @State private var selectedCategory: String? = nil
-    @State private var selectedRefrigerator: Refrigerator? = nil
-    @State private var selectedCity: String = ""
-    @State private var dealers: [String] = []
-    @State private var selectedDealer: String = ""
-    @State private var showPaymentOptions: Bool = false
+    @State private var selectedProduct: ElectricalProduct?
     
     var body: some View {
         
         NavigationView {
+            List(electricalProductCategories) { product in
+                NavigationLink {
+                 RefrigeratorListView(refrigerators: Refrigerator.refrigerators)
+                        .navigationTitle(product.name)
+                } label: {
+                    Text(product.name)
+                }
+
+            }.navigationTitle("Electrical Appliances")
+        }
+        
+    }
+}
+
+struct RefrigeratorListView: View {
+    let refrigerators: [Refrigerator]
+    
+    var body: some View {
+        List(refrigerators) { refrigerator in
+            NavigationLink(destination: RefrigeratorDetailView(refrigerator: refrigerator)) {
+                Text(refrigerator.modelNo)
+            }
+        }
+    }
+}
+
+struct RefrigeratorDetailView: View {
+    let refrigerator: Refrigerator
+    
+    var body: some View {
+        VStack {
+            Text(refrigerator.modelNo)
+                .font(.title)
             
-            VStack {
-                if selectedCategory == nil {
-                    Text("Select a category:")
-                    // List of product categories
-                    List {
-                        ForEach(Set(refrigerators.map { $0.category }), id: \.self) { category in
-                            Button(action: {
-                                selectedCategory = category
-                            }) {
-                                Text(category)
-                            }
-                        }
-                    }
-                    
-                } else if let category = selectedCategory {
-                    Text("Select a refrigerator:")
-                    // List of refrigerators in the selected category
-                    List {
-                        ForEach(refrigerators.filter { $0.category == category }) { refrigerator in
-                            Button(action: {
-                                selectedRefrigerator = refrigerator
-                            }) {
-                                Text(refrigerator.modelNo)
-                            }
-                        }
-                    }
-                    
-                } else if let refrigerator = selectedRefrigerator {
-                    Text("Refrigerator Details:")
-                    // Display refrigerator details
-                    // ...
-                }
-                
-                Spacer()
-                
-                if !dealers.isEmpty {
-                    Text("Select a dealer:")
-                    // List of dealers
-                    List(dealers, id: \.self) { dealer in
-                        Button(action: {
-                            selectedDealer = dealer
-                        }) {
-                            Text(dealer)
-                        }
-                    }
-                }
-                
-                Spacer()
-                
-                Button(action: {
-                    showPaymentOptions = true
-                }) {
-                    Text("Proceed to Payment")
+            Text("Price: $\(refrigerator.price, specifier: "%.2f")")
+            
+            VStack(alignment: .leading) {
+                Text("Special Offers:")
+                    .font(.headline)
+                ForEach(refrigerator.specialOffers) { offer in
+                    Text(offer.offerDescription)
                 }
             }
-            .navigationBarTitle("Refrigerator Store")
+            
+            DeliveryDetailsView(store: Store.stores[0])
         }
-        .sheet(isPresented: $showPaymentOptions) {
-            // Payment options and discounts
-            // ...
+        .padding()
+    }
+}
+
+struct DeliveryDetailsView: View {
+    let store: Store
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Delivery Details:")
+                .font(.headline)
+            
+            Text("Store: \(store.name)")
+            Text("Location: \(store.location.city)")
+            
+            DealersListView(store: Store.stores[0]) // You can choose a store here
+            
+            PurchaseButtonView()
+        }
+    }
+}
+
+struct DealersListView: View {
+    let store: Store
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text("Dealers:")
+                .font(.headline)
+            ForEach(store.dealers.sorted(by: { $0.ratings > $1.ratings })) { dealer in
+                Text(dealer.name)
+                    .foregroundColor(.blue)
+                Text("Ratings: \(dealer.ratings, specifier: "%.1f")")
+                Text("Contact: \(dealer.contactDetails.phone)")
+            }
+        }
+    }
+}
+
+struct PurchaseButtonView: View {
+    var body: some View {
+        NavigationLink(destination: PurchaseView()) {
+            Text("Purchase")
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+        }
+    }
+}
+
+//struct PurchaseView: View {
+//    var body: some View {
+//        VStack {
+//            Text("Final Price: $xxx.xx")
+//                .font(.title)
+//                .padding()
+//
+//            Text("Delivery Address:")
+//                .font(.headline)
+//            // Input fields for address
+//
+//            Text("Select Service Category:")
+//                .font(.headline)
+//            // Dropdown for service category
+//
+//            Text("Select Installation Category:")
+//                .font(.headline)
+//            // Dropdown for installation category
+//
+//            Button(action: {
+//                // Complete purchase logic
+//            }) {
+//                Text("Complete Purchase")
+//                    .padding()
+//                    .background(Color.blue)
+//                    .foregroundColor(.white)
+//                    .cornerRadius(10)
+//            }
+//        }
+//        .padding()
+//    }
+//}
+
+
+struct PurchaseView: View {
+    @State private var selectedServiceCategory: ServiceCategory?
+    @State private var selectedInstallationCategory: InstallationCategory?
+    @State private var isPurchaseComplete = false
+    
+    var body: some View {
+        VStack {
+            Text("Final Price: $xxx.xx")
+                .font(.title)
+                .padding()
+            
+            Text("Delivery Address:")
+                .font(.headline)
+            // Input fields for address
+            
+            Text("Select Service Category:")
+                .font(.headline)
+            Picker(selection: $selectedServiceCategory, label: Text("Service Category")) {
+                ForEach(ServiceCategory.serviceCategories, id: \.name) { category in
+                    Text(category.name)
+                }
+            }
+            
+            Text("Select Installation Category:")
+                .font(.headline)
+            Picker(selection: $selectedInstallationCategory, label: Text("Installation Category")) {
+                ForEach(InstallationCategory.installationCategories, id: \.name) { category in
+                    Text(category.name)
+                }
+            }
+            
+            Button(action: {
+                // Simulate completing the purchase logic
+                isPurchaseComplete = true
+            }) {
+                Text("Complete Purchase")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+        }
+        .padding()
+        .alert(isPresented: $isPurchaseComplete) {
+            Alert(
+                title: Text("Purchase Complete"),
+                message: Text("Your purchase is complete."),
+                dismissButton: .default(Text("OK")) {
+                    // Navigate back to the homepage
+                    isPurchaseComplete = false
+                }
+            )
         }
     }
 }
